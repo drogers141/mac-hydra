@@ -83,7 +83,6 @@ function util.str(t)
     s = "{" .. string.sub(s, 1, string.len(s)-2) .. "}"
     return s
   end
---  return "{x="..r.x..", y="..r.y..", w="..r.w..", h="..r.h.."}"
 end
 
 -- print table to stdout in one line
@@ -107,12 +106,9 @@ util.syslog = function(s, t)
   os.execute("/usr/bin/logger -t " .. tag .. " " .. "'" .. s .. "'")
 end
 
--- log string s to file in append mode
--- optional f - file
--- standard log is defined here for now
+-- log string s to file f in append mode
 util.log = function(s, f)
-  local logfile = f or '/Users/drogers/.hydra/log'
-  local out = assert(io.open(logfile,'a'))
+  local out = assert(io.open(f,'a'))
   out:write(s)
   out:close()
 end
@@ -160,7 +156,7 @@ util.volume_down = fnutils.partial(util.volume_adjust, -3)
 -- "visible" windows in mru order
 -- note this replaces window.orderedwindows()
 -- currently need to filter out windows that are not "standard" in some apps
--- e.g. - if an iTerm terminal is in focus, 2 titleless windows will
+-- e.g. - if an iTerm terminal is in focus, 2 title-less windows
 -- with the same frame as the screen will be displayed
 util.orderedwindows = function()
   return fnutils.filter(window.orderedwindows(),
