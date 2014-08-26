@@ -16,7 +16,7 @@ local nt1 = { win1={id=1, frame={x=0, y=0, w=0, h=0}},
               win2={id=2, frame={x=100, y=50, w=600, h=400}}}
 local nt2 = { win1={id=1, frame={x=0, y=0, w=0, h=0}},
               win2={id=2, frame={x=100, y=50, w=600, h=400}}}
-              
+
 local nt3 = { win1={id=1, frame={x=0, y=0, w=100, h=100}},
               win2={id=2, frame={x=100, y=50, w=600, h=400}}}
 local nt4 = { win1={id=1, frame={x=0, y=0, w=100, h=100}},

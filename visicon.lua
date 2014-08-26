@@ -1,6 +1,6 @@
 -- Visibility Context
 -- Abstraction for handling state I care about
--- Add docs 
+-- Add docs
 
 local util = dofile(package.searchpath("util", package.path))
 
@@ -9,7 +9,7 @@ require "ext.dialog.init"
 
 visicon = {}
 
-visicon.snapshot_dir = '/Users/drogers/.hydra/snapshots' 
+visicon.snapshot_dir = '/Users/drogers/.hydra/snapshots'
 
 
 -- terse time format good for file names
@@ -17,7 +17,7 @@ visicon.snapshot_dir = '/Users/drogers/.hydra/snapshots'
 local function format_from_timestamp(timestamp)
   return os.date('%Y-%m-%d_%H.%M.%S', timestamp)
 end
-  
+
 -- returns table of the current visible windows context
 function visicon.state()
   local state = {}
@@ -43,7 +43,7 @@ end
 -- each queue will be kept in memory, between a min and max
 -- size - the queues hold visicon states as elements
 -- relies on ability to always easily determine what desktop
--- is current as well - this seems not to be a problem 
+-- is current as well - this seems not to be a problem
 -- the queues are just lua tables maintained as arrays
 -- with the most recent visicon state at the end of the array
 -- ie vsq[#vsq]
@@ -62,7 +62,7 @@ function visicon.global_queue_status()
   local qname = visicon.get_current_vc_queue_name()
   local lines = {}
   if #util.keys(vc_queues) == 0 then
-    lines[#lines+1] = "{}" 
+    lines[#lines+1] = "{}"
   else
     for i, v in pairs(vc_queues) do
       if qname and i == qname then
@@ -92,7 +92,7 @@ end
 
 -- Initialize global vc_queues structure from json snapshot
 -- snapshot_file - optional - snapshot json file to restore from
---    default restores from most recent snapshot in 
+--    default restores from most recent snapshot in
 --    visicon.snapshot_dir if there is one
 --    success or failure logged to syslog
 function visicon.restore_queues_from_snapshot(snapshot_file)
@@ -104,7 +104,7 @@ function visicon.restore_queues_from_snapshot(snapshot_file)
     table.sort(snapshots)
     jsonfile = #snapshots > 0 and snapshots[#snapshots]
   end
-  
+
   if jsonfile then
     local f = assert(io.open(jsonfile, 'r'))
     local jsonstr = f:read("*a")
@@ -115,7 +115,7 @@ function visicon.restore_queues_from_snapshot(snapshot_file)
         vc_queues = vc_qs
         util.syslog("Restored vc queues from file: " .. jsonfile)
       else
-        util.syslog("Got json string from file: " .. jsonfile .. 
+        util.syslog("Got json string from file: " .. jsonfile ..
                     ", but no vc queues")
       end
     else
@@ -127,7 +127,7 @@ function visicon.restore_queues_from_snapshot(snapshot_file)
 end
 
 -- returns name of the queue for the current visibility context
--- nil if not - should log that if it happens and see 
+-- nil if not - should log that if it happens and see
 -- if we need to change up
 function visicon.get_current_vc_queue_name()
   local screen_id = util.get_screen_id(screen.mainscreen():frame())
@@ -162,7 +162,7 @@ visicon.ignore_dialog = nil
 -- still - should create and destroy the dialog if used in different
 -- visicons - may be a minor memory leak
 function visicon.create_ignore_dialog()
-  visicon.ignore_dialog = util.textgrid("Visicon Untracked", 
+  visicon.ignore_dialog = util.textgrid("Visicon Untracked",
     "The current visibility\ncontext will not be saved.")
   local w = visicon.ignore_dialog:window()
   winutil.throw_win(w, "up")
@@ -177,8 +177,8 @@ function visicon.ignore_current_vc()
   if not fnutils.contains(visicon.vcs_to_ignore, qname) then
     table.insert(visicon.vcs_to_ignore, qname)
     visicon.create_ignore_dialog()
-    util.syslog("ignoring current vc: " .. qname .. 
-                ", currently ignoring queues: " .. 
+    util.syslog("ignoring current vc: " .. qname ..
+                ", currently ignoring queues: " ..
                 table.concat(visicon.vcs_to_ignore, ", "))
   end
 end
@@ -191,8 +191,8 @@ function visicon.unignore_current_vc()
   if index then
     table.remove(visicon.vcs_to_ignore, index)
     visicon.ignore_dialog:destroy()
-    util.syslog("unignoring current vc: " .. qname .. 
-                ", currently ignoring queues: " .. 
+    util.syslog("unignoring current vc: " .. qname ..
+                ", currently ignoring queues: " ..
                 table.concat(visicon.vcs_to_ignore, ", "))
   end
 end
@@ -205,7 +205,7 @@ function visicon.add_current_vc_state()
   local qname = assert(visicon.get_current_vc_queue_name())
   if fnutils.contains(visicon.vcs_to_ignore, qname) then
     util.syslog("did not save vc state to queue: " .. qname ..
-                ", ignoring queues: " .. 
+                ", ignoring queues: " ..
                 table.concat(visicon.vcs_to_ignore, ", "))
   else
     local q = visicon.get_current_vc_queue()
@@ -223,10 +223,10 @@ end
 -- set current vc to state
 function visicon.set_to_state(state)
   local logstr = {"Windows set:"}
-  local wins_str = table.concat(fnutils.map(util.orderedwindows(), 
+  local wins_str = table.concat(fnutils.map(util.orderedwindows(),
                                     function(w) return w:id() end), ", ")
-  local state_str = table.concat(fnutils.map(state['windows'], 
-                                    function(w) return w.id end), ", ")                                    
+  local state_str = table.concat(fnutils.map(state['windows'],
+                                    function(w) return w.id end), ", ")
   for i, w in pairs(util.orderedwindows()) do
     for j, s in pairs(state['windows']) do
       if s.id == w:id() then
@@ -235,7 +235,7 @@ function visicon.set_to_state(state)
       end
     end
   end
-  util.syslog(table.concat(logstr, "  ") .. 
+  util.syslog(table.concat(logstr, "  ") ..
               "\nWindows in Context: " .. wins_str ..
               "\nWindows in State: " .. state_str)
 end
@@ -250,7 +250,7 @@ function visicon.restore_to_last_state()
   else
     local prev_state = vc_q[#vc_q]
     if not prev_state then
-      util.syslog("restore_to_last_state: No state in queue: " .. 
+      util.syslog("restore_to_last_state: No state in queue: " ..
                     visicon.get_current_vc_queue_name())
     else
       visicon.set_to_state(prev_state)

@@ -23,7 +23,7 @@ end
 -- attempting to resize to a negative width or height is a no-op
 --    and r is returned
 -- r - rect to resize
--- delta - {x, y} - vector to resize by - +x grows window to right, 
+-- delta - {x, y} - vector to resize by - +x grows window to right,
 --    -x shrinks window on right, +y grows window downward
 --    -y shrinks window by raising bottom
 win.resize_rect = function(r, delta)
@@ -32,7 +32,7 @@ win.resize_rect = function(r, delta)
     return r
   else
     return result
-  end 
+  end
 end
 
 -- throw a rect in one direction to the inside border of a bounding rect
@@ -40,7 +40,7 @@ end
 -- of the surrounding rect where it hits - general case is to move a window
 -- all the way to the edge of a screen in one direction while maintaining
 -- its size and location on the axis in the other direction
--- however, you can have a window that is somewhat past the edge of a screen 
+-- however, you can have a window that is somewhat past the edge of a screen
 -- and throw it in the same direction to quickly put it back fully on the screen
 -- r - rect to throw
 -- outside_r - "outside" or "enclosing" rect that the rect gets thrown to
@@ -51,7 +51,7 @@ win.throw_rect = function(r, outside_r, direction)
   local outside_right = outside_r.x + outside_r.w
   local outside_bottom = outside_r.y + outside_r.h
   assert(outside_right > 0 and outside_bottom > 0)
-  
+
   ret = nil
   if direction == "left" then
     ret = util.merge(r, {x = outside_r.x})
@@ -64,7 +64,7 @@ win.throw_rect = function(r, outside_r, direction)
   else
     assert(false, "bad direction: " .. direction)
   end
-  
+
   return ret
 end
 
@@ -87,7 +87,7 @@ function win.expand_fill_rect(r, outside_r, direction)
   local r_right = r.x + r.w
   local r_bottom = r.y + r.h
   assert(outside_right > 0 and outside_bottom > 0)
-  
+
   ret = nil
   if direction == "left" then
     ret = util.merge(r, {x = outside_r.x,
@@ -103,7 +103,7 @@ function win.expand_fill_rect(r, outside_r, direction)
     assert(false, "bad direction: " .. direction)
   end
   assert(ret.w > 0 and ret.h > 0, "resized rect not cool by Euclid")
-  
+
   return ret
 end
 
@@ -137,7 +137,7 @@ win.move_win = function(w, m, use_pix)
 end
 
 -- resize a window by adding an {x, y} vector to it by moving the right and/or bottom edge
---    attempting to resize to a negative width or height is a no-op 
+--    attempting to resize to a negative width or height is a no-op
 -- by default x and y are percentage of screen width or height, respectively
 -- w - window to resize
 -- m - {x, y} - resize vector - +x grows right edge, -x shrinks right edge

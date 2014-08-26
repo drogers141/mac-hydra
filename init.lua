@@ -22,7 +22,7 @@ function run_tests()
 end
 
 -----------------------------
--- Temporary Util 
+-- Temporary Util
 -----------------------------
 
 
@@ -117,7 +117,7 @@ function tile_window_to(win, otherwin, fill)
   util.syslog("f: " .. util.str(f))
   util.syslog("otherf: " .. util.str(otherf))
   util.syslog("delta x=" .. deltax .. ", y=" .. deltay)
-  
+
   if math.abs(deltax) > math.abs(deltay) then
     -- tile horizontally
     if deltax > 0 then
@@ -134,7 +134,7 @@ function tile_window_to(win, otherwin, fill)
     util.syslog("abs(deltax) <= abs(deltay)")
   end
   util.syslog("newf: " .. util.str(newf))
-  
+
   win:setframe(newf)
 end
 
@@ -257,12 +257,12 @@ local volkey = hotkey.modal.new({"ctrl", "alt"}, "v")
 volkey:bind({}, "up", util.volume_up)
 volkey:bind({}, "down", util.volume_down)
 volkey:bind({}, "escape", function() volkey:exit() end)
-function volkey:entered() 
-  notify.show("Mode Activated", "", 
+function volkey:entered()
+  notify.show("Mode Activated", "",
               "Volume adjust mode.", "")
 end
-function volkey:exited() 
-  notify.show("Mode Deactivated", "", 
+function volkey:exited()
+  notify.show("Mode Deactivated", "",
               "Leaving volume adjust mode.\nVolume: " ..
               audiodevice.defaultoutputdevice():volume(), "")
 end
@@ -292,15 +292,15 @@ winkey:bind({}, "t", tile_first_to_second_ordered_window)
 
 winkey:bind({}, "escape", function() winkey:exit() end)
 
-function winkey:entered() 
+function winkey:entered()
   local qname = assert(visicon.get_current_vc_queue_name())
   if not fnutils.contains(visicon.vcs_to_ignore, qname) then
-    notify.show("Mode Activated", "", 
+    notify.show("Mode Activated", "",
               "Focused window operations.", "")
   end
 end
 
-function winkey:exited() 
+function winkey:exited()
   -- note that I am now guarding the notification calls with
   -- a check to see if the current visicon is being ignored
   -- which duplicates logic in visicon.add_current_vc_state
@@ -310,7 +310,7 @@ function winkey:exited()
   visicon.add_current_vc_state()
   local qname = assert(visicon.get_current_vc_queue_name())
   if not fnutils.contains(visicon.vcs_to_ignore, qname) then
-    notify.show("Mode Deactivated", "", 
+    notify.show("Mode Deactivated", "",
               "Leaving window operations mode - saved vc state", "")
   end
 end

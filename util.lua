@@ -62,7 +62,7 @@ end
 function util.keys(t)
   local keyset = {}
   local i = 0
-  
+
   for k, v in pairs(t) do
     i = i + 1
     keyset[i]=k
@@ -158,7 +158,7 @@ util.volume_down = fnutils.partial(util.volume_adjust, -3)
 -------------------------------------------------------------------------------
 
 -- "visible" windows in mru order
--- note this replaces window.orderedwindows() 
+-- note this replaces window.orderedwindows()
 -- currently need to filter out windows that are not "standard" in some apps
 -- e.g. - if an iTerm terminal is in focus, 2 titleless windows will
 -- with the same frame as the screen will be displayed
@@ -167,14 +167,14 @@ util.orderedwindows = function()
                             function(w) return w:isstandard() end)
 end
 
--- table for a window userdata object 
+-- table for a window userdata object
 --    id, application title, frame, window title
 util.windowtable = function(w)
   return {id=w:id(), apptitle=w:application():title(),
             frame=w:frame(), title=w:title()}
 end
 
--- table for a screen userdata object - frame, 
+-- table for a screen userdata object - frame,
 --    frames with and without dock and menu
 util.screentable = function(s)
   return {frame=s:frame(), frame_idm=s:frame_including_dock_and_menu(),
@@ -202,7 +202,7 @@ util.get_screen_id = function(rect)
 end
 
 ---------------------------------------------------------------
--- OTHER 
+-- OTHER
 ---------------------------------------------------------------
 
 -- returns list of lines in multiline string s
@@ -219,7 +219,7 @@ end
 function util.textgrid(title, text)
   local win = textgrid.create()
 --  win:protect()
-  
+
   local textlines = util.splitlines(text)
   local lenmap = fnutils.map(textlines, string.len)
   local maxlen = math.max(table.unpack(lenmap))
@@ -245,12 +245,12 @@ function util.textgrid(title, text)
       win:setchar(c, i, linenum - pos + 1)
     end
   end
-    
+
   win:show()
   win:focus()
-  
+
   return win
 end
-  
+
 
 return util
