@@ -8,11 +8,11 @@ Some goals:
 - awareness of state of windows in differing contexts
   - state of windows on a particular desktop, i.e. Space in Mac-speak
   - awareness of different screens in combination with desktop state
-      - i.e. - number-of-contexts = number-of-screens - number-of-desktops
+      - i.e. - number-of-contexts = number-of-screens * number-of-desktops
 - create a functionality layer with above that allows arbitrary scripting as needed
 
 ## Previous Implementation
-Previously, I accomplished this using Slate: https://github.com/jigish/slate which is a fine set of utilities, but not under active development.  In particular I used the javascript api to implement some of my own stuff.
+Previously, I accomplished this using Slate: https://github.com/jigish/slate which is a fine set of utilities, but not under active development.  In particular I used the javascript api to implement some of the functionality layer described above.
 
 ## Current Implementation - Hydra
 This implementation is targeted toward Hydra, which was a lua-based effort that is undergoing renaming and code changes.
