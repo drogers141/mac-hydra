@@ -218,26 +218,72 @@ function visicon.add_current_vc_state()
   end
 end
 
+-- set current vc to state by setting each window in vc to
+-- geometry for first window in state encountered that has the same
+-- application
+-- any windows without applications in state are unchanged
+-- returns list of ids of windows that were set
+-- ids_to_ignore - optional - list of window ids to ignore
+function visicon.set_to_state_by_app(state, ids_to_ignore)
+  local wins_set = {}
+  local logstr = {"Windows set by app:"}
+  local wins_to_check = nil
+  if ids_to_ignore then
+    wins_to_check = fnutils.filter(util.orderedwindows(), function(w)
+                        return not fnutils.contains(ids_to_ignore, w:id())
+                        end)
+  else
+    wins_to_check = util.orderedwindows()
+  end
+  for i, w in pairs(wins_to_check) do
+    for j, s in pairs(state['windows']) do
+      if s.apptitle == w:application():title() then
+        logstr[#logstr+1] = w:id() .. " (" .. w:application():title() .. ")"
+        w:setframe(s.frame)
+        wins_set[#wins_set+1] = w:id()
+        break
+      end
+    end
+  end
+  util.syslog(table.concat(logstr, "  "))
+  return wins_set
+end
 
-
--- set current vc to state
-function visicon.set_to_state(state)
-  local logstr = {"Windows set:"}
-  local wins_str = table.concat(fnutils.map(util.orderedwindows(),
-                                    function(w) return w:id() end), ", ")
-  local state_str = table.concat(fnutils.map(state['windows'],
-                                    function(w) return w.id end), ", ")
+-- set current vc to state by matching window ids in vc to those in state
+-- any windows with ids not found in state are unchanged
+-- returns list of ids of windows that were set
+function visicon.set_to_state_by_id(state)
+  local wins_set = {}
+  local logstr = {"Windows set by id:"}
   for i, w in pairs(util.orderedwindows()) do
     for j, s in pairs(state['windows']) do
       if s.id == w:id() then
         logstr[#logstr+1] = w:id()
         w:setframe(s.frame)
+        wins_set[#wins_set+1] = w:id()
       end
     end
   end
-  util.syslog(table.concat(logstr, "  ") ..
+  util.syslog(table.concat(logstr, "  "))
+  return wins_set
+end
+
+-- set current vc to state
+-- note that this does not then add the new vc context to the current queue
+-- first look by app, then by id - this means that wins with id
+-- matching one in state are set twice - but always the id match
+-- is preferred for the final geometry reset
+function visicon.set_to_state(state)
+  local wins_str = table.concat(fnutils.map(util.orderedwindows(),
+                                    function(w) return w:id() end), ", ")
+  local state_str = table.concat(fnutils.map(state['windows'],
+                                    function(w) return w.id end), ", ")
+  util.syslog("Setting visicon ".. visicon.get_current_vc_queue_name() ..
+              " to state .." ..
               "\nWindows in Context: " .. wins_str ..
               "\nWindows in State: " .. state_str)
+  local wins_by_id = visicon.set_to_state_by_id(state)
+  visicon.set_to_state_by_app(state, wins_by_id)
 end
 
 -- find the queue for this visicon and set all the windows
