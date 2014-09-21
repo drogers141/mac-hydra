@@ -108,6 +108,7 @@ end
 -- fill - optional - if truthy after tiling the window
 --    to the other window in one direction, fill the screen
 --    in the orthogonal direction
+-- TODO - haven't needed yet, but have not implemented vertical tiling
 function tile_window_to(win, otherwin, fill)
   local f = win:frame()
   local otherf = otherwin:frame()
@@ -138,10 +139,48 @@ function tile_window_to(win, otherwin, fill)
   win:setframe(newf)
 end
 
+-- same logic as tiling one window to the other, but don't
+-- resize the window
+-- as with tiling - not implementing vertical butting yet
+function butt_window_to(win, otherwin)
+  local f = win:frame()
+  local otherf = otherwin:frame()
+  deltax, deltay = otherf.x - f.x, otherf.y - f.y
+  local newf = {x=f.x, y=f.y, w=f.w, h=f.h}
+  util.syslog("f: " .. util.str(f))
+  util.syslog("otherf: " .. util.str(otherf))
+  util.syslog("delta x=" .. deltax .. ", y=" .. deltay)
+
+  if math.abs(deltax) > math.abs(deltay) then
+    -- tile horizontally
+    if deltax > 0 then
+      util.syslog("delta x > zero -  tiling left")
+      newf.x = otherf.x - newf.w
+    else
+      util.syslog("delta x < 0 - tiling on right")
+      newf.x = otherf.x + otherf.w
+    end
+  else
+    -- tile vertically
+    util.syslog("abs(deltax) <= abs(deltay)")
+  end
+  util.syslog("newf: " .. util.str(newf))
+
+  win:setframe(newf)
+
+end
+
 function tile_first_to_second_ordered_window()
   local wins = util.orderedwindows()
   if #wins >= 2 then
     tile_window_to(wins[1], wins[2])
+  end
+end
+
+function butt_first_to_second_ordered_window()
+  local wins = util.orderedwindows()
+  if #wins >= 2 then
+    butt_window_to(wins[1], wins[2])
   end
 end
 
@@ -251,6 +290,7 @@ end
 --    cmd+shift up      Expand window to top edge of screen
 --    cmd+shift down    Expand window to bottom edge of screen
 --    T         Tile first to second ordered window
+--    B         Butt first to second ordered window
 --    escape    Exit Mode
 
 local volkey = hotkey.modal.new({"ctrl", "alt"}, "v")
@@ -289,6 +329,7 @@ winkey:bind({"cmd", "shift"}, "up", winops.expand_fill_up)
 winkey:bind({"cmd", "shift"}, "down", winops.expand_fill_down)
 
 winkey:bind({}, "t", tile_first_to_second_ordered_window)
+winkey:bind({}, "b", butt_first_to_second_ordered_window)
 
 winkey:bind({}, "escape", function() winkey:exit() end)
 
