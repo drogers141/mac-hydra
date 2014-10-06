@@ -88,6 +88,7 @@ function movewindow_lefthalf()
   win:setframe(newframe)
 end
 
+-- disposable - checking setframe() behavior
 function setframe(w, f)
   w:setsize(f)
   w:settopleft(f)
@@ -170,6 +171,14 @@ function butt_window_to(win, otherwin)
 
 end
 
+-- make window win's frame the same size and location
+-- as window otherwin
+function copy_window_geo(win, otherwin)
+  local f = otherwin:frame()
+  local newf = {x=f.x, y=f.y, w=f.w, h=f.h}
+  win:setframe(newf)
+end
+
 function tile_first_to_second_ordered_window()
   local wins = util.orderedwindows()
   if #wins >= 2 then
@@ -181,6 +190,13 @@ function butt_first_to_second_ordered_window()
   local wins = util.orderedwindows()
   if #wins >= 2 then
     butt_window_to(wins[1], wins[2])
+  end
+end
+
+function copy_window_geo_first_to_second_ordered_window()
+  local wins = util.orderedwindows()
+  if #wins >= 2 then
+    copy_window_geo(wins[1], wins[2])
   end
 end
 
@@ -291,6 +307,7 @@ end
 --    cmd+shift down    Expand window to bottom edge of screen
 --    T         Tile first to second ordered window
 --    B         Butt first to second ordered window
+--    C         Copy geometry of second ordered window to first
 --    escape    Exit Mode
 
 local volkey = hotkey.modal.new({"ctrl", "alt"}, "v")
@@ -330,6 +347,7 @@ winkey:bind({"cmd", "shift"}, "down", winops.expand_fill_down)
 
 winkey:bind({}, "t", tile_first_to_second_ordered_window)
 winkey:bind({}, "b", butt_first_to_second_ordered_window)
+winkey:bind({}, "c", copy_window_geo_first_to_second_ordered_window)
 
 winkey:bind({}, "escape", function() winkey:exit() end)
 
