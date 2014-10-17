@@ -149,6 +149,40 @@ function visicon.get_current_vc_queue()
   return vc_queues[qname]
 end
 
+-- returns flat list of all windows of an app in visicon queue in historical order
+-- q - reference to a visicon queue
+-- apptitle - value of the window['apptitle'] for a window in a visicon
+-- returns - list of windows which are tables with keys: apptitle, frame, id, title
+function visicon.all_win_history_by_app(q, apptitle)
+  -- list of windows of same app in each visicon and timestamp
+  local wins_by_vc = {}
+  fnutils.each(q, function(vc)
+      local wins = fnutils.filter(vc['windows'], function(e) return e['apptitle'] == apptitle end)
+      if #wins > 0 then
+        for i = 1, #wins do
+          wins_by_vc[#wins_by_vc+1] = wins[i]
+        end
+      end
+    end)
+  return wins_by_vc
+end
+
+-- returns a table of all unique frame geometries for windows of a specific app
+-- in historical order
+-- q - reference to a visicon queue
+-- apptitle - value of the window['apptitle'] for a window in a visicon
+-- return - list of frames - each frame is table with keys: x, y, w, h
+function visicon.win_frame_history_by_app(q, apptitle)
+  local all_wins = visicon.all_win_history_by_app(q, apptitle)
+  local frames = {}
+  for i,v in pairs(all_wins) do
+    if not fnutils.find(frames, function(e) return util.equals(e, v['frame']) end) then
+      frames[#frames+1] = v['frame']
+    end
+  end
+  return frames
+end
+
 -- list of vc queue names whose window states will be ignored
 -- when add_current_vc_state is called
 -- this is a public, global, mutable thing

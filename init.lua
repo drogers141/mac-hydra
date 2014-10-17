@@ -47,6 +47,10 @@ function win_and_screen()
   print(inspect(sfnodm))
 end
 
+-----------------------
+-- From Default init
+-----------------------
+
 -- show an alert to let you know Hydra's running
 hydra.alert("Hydra config loaded", 1.5)
 
@@ -71,6 +75,10 @@ hydra.menu.show(function()
 
     return t
 end)
+
+-----------------------
+-- Window Operations
+-----------------------
 
 -- move the window to the right half of the screen
 function movewindow_righthalf()
@@ -163,7 +171,7 @@ function butt_window_to(win, otherwin)
     end
   else
     -- tile vertically
-    util.syslog("abs(deltax) <= abs(deltay)")
+    util.syslog("abs(deltax) <= abs(deltay) - tiling vertically")
   end
   util.syslog("newf: " .. util.str(newf))
 
@@ -199,6 +207,67 @@ function copy_window_geo_first_to_second_ordered_window()
     copy_window_geo(wins[1], wins[2])
   end
 end
+
+---------------------------
+-- Window History Operation
+---------------------------
+
+-- module level cache of window geometry history to traverse
+local _win_geo_hist = nil
+
+function clear_geo_hist()
+  _win_geo_hist = nil
+end
+
+local function _win_geo_hist_iterator(win)
+  local q = visicon.get_current_vc_queue()
+  local geo_hist = util.reverse(visicon.win_frame_history_by_app(q, win:application():title()))
+  print("geo_hist: " .. #geo_hist)
+  if #geo_hist > 0 then
+    local index = 0
+    return function (step_by)
+        index = math.min(math.max(1, index + step_by), #geo_hist)
+        print("index=" .. index)
+        return geo_hist[index]
+      end
+  else
+    return nil
+  end
+end
+
+-- get a closure around the geometry history for window by app title
+-- returns a function that takes an int and adds that to the current index in the
+-- array of frames for the window in question
+-- so f = get_geo_hist(current_win) ->
+-- f(1) returns next frame going backward in history
+-- f(-1) returns next frame going forward in history
+-- both directions are bounded by
+-- ** call clear_geo_hist() after done invoking for a window
+function get_geo_hist(win)
+  if not _win_geo_hist then
+    _win_geo_hist = _win_geo_hist_iterator(win)
+  end
+  return _win_geo_hist
+end
+
+-- traverse the geometry history of the focused window
+-- set frame to each new geometry in traversal
+-- at ends of traversal, frame stays the same
+-- ** must call clear_geo_hist before you want to invoke for a new window
+-- step_by - integer - step iterator by - +1: increment history index by 1
+--    -1: decrement index by 1, etc
+function traverse_focused_win_geo_hist(step_by)
+  local win = window.focusedwindow()
+  local f = get_geo_hist(win)
+  local frame = f(step_by)
+  win:setframe(frame)
+end
+
+-- go further back in window's geometry history by app in visicon queue
+focused_win_geo_hist_next = fnutils.partial(traverse_focused_win_geo_hist, 1)
+-- come back toward present in windows's geo history
+focused_win_geo_hist_previous = fnutils.partial(traverse_focused_win_geo_hist, -1)
+
 
 -- Window and app info
 function order_wins_info_str()
@@ -308,6 +377,11 @@ end
 --    T         Tile first to second ordered window
 --    B         Butt first to second ordered window
 --    C         Copy geometry of second ordered window to first
+--
+--    Change geometry by going backward in history of windows with same app in
+--    Current Visicon Queue - only unique geometries, so if no change, you are at end
+--    N         Change geometry to next back in history
+--    P         Change geometry to previous (ie forward in history)
 --    escape    Exit Mode
 
 local volkey = hotkey.modal.new({"ctrl", "alt"}, "v")
@@ -349,6 +423,9 @@ winkey:bind({}, "t", tile_first_to_second_ordered_window)
 winkey:bind({}, "b", butt_first_to_second_ordered_window)
 winkey:bind({}, "c", copy_window_geo_first_to_second_ordered_window)
 
+winkey:bind({}, "n", focused_win_geo_hist_next)
+winkey:bind({}, "p", focused_win_geo_hist_previous)
+
 winkey:bind({}, "escape", function() winkey:exit() end)
 
 function winkey:entered()
@@ -359,7 +436,14 @@ function winkey:entered()
   end
 end
 
+-- deal with any cleanup
 function winkey:exited()
+  -- clear geometry history for focused window if being traversed
+  -- note that depending on usage, might want to make this smarter
+  -- and have the closure function confirm the app of the focused window
+  -- and reset there if it changes - this might facilitate operating on multiple
+  -- windows in a single session
+  clear_geo_hist()
   -- note that I am now guarding the notification calls with
   -- a check to see if the current visicon is being ignored
   -- which duplicates logic in visicon.add_current_vc_state
